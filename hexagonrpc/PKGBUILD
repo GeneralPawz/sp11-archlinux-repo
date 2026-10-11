@@ -1,0 +1,31 @@
+# Maintainer: Friedrich Schrödter <friedrich.schroedter@uni-weimar.de>
+
+# hexagonrpc (linux-msm) with writable persist support (-P), large input buffers and the
+# apps_std write methods, which the Surface Pro 11 sensor firmware needs to build its registry.
+# Branch ssc-writable-persist of the fork; drop back to upstream once merged.
+
+pkgname=hexagonrpc
+pkgver=0.5.0.r7.174fe7e
+pkgrel=1
+pkgdesc='FastRPC reverse tunnel and file server for Qualcomm DSPs (hexagonrpcd)'
+arch=('aarch64')
+url='https://github.com/GeneralPawz/hexagonrpc'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'json-c')
+makedepends=('git' 'meson' 'ninja')
+_commit=174fe7ed3fefd1161fc0342066844be10fd8da3a
+source=("$pkgname::git+$url.git#commit=$_commit")
+sha256sums=('SKIP')
+
+build() {
+	arch-meson "$pkgname" build
+	meson compile -C build
+}
+
+check() {
+	meson test -C build --print-errorlogs
+}
+
+package() {
+	meson install -C build --destdir "$pkgdir"
+}

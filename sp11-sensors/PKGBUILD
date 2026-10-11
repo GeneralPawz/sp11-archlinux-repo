@@ -1,0 +1,31 @@
+# Maintainer: Friedrich Schrödter <friedrich.schroedter@uni-weimar.de>
+
+# Accelerometer (rotation), light sensor and compass for the Surface Pro 11. The sensor
+# configuration is Microsoft's and isn't redistributed: run sp11-sensors-config after installing,
+# which downloads it like sp11-grab-fw does (or --from a Windows driver copy).
+
+pkgname=sp11-sensors
+pkgver=1.0.r2.c5caf14
+pkgrel=1
+pkgdesc='Surface Pro 11 sensors: hexagonrpcd service, configuration installer, accelerometer setup, Hyprland auto-rotation'
+arch=('any')
+url='https://github.com/GeneralPawz/sp11-sensors'
+license=('BSD-3-Clause')
+groups=('sp11')
+depends=('bash' 'cabextract' 'curl' 'jq' 'hexagonrpc' 'libssc' 'iio-sensor-proxy')
+optdepends=('hyprland: sp11-autorotate')
+install=sp11-sensors.install
+_commit=c5caf14266e921c49beed0ddb1eba36ae98f644b
+source=("$pkgname::git+$url.git#commit=$_commit")
+sha256sums=('SKIP')
+
+package() {
+	cd "$pkgname"
+	install -Dm755 sp11-sensors-config "$pkgdir/usr/bin/sp11-sensors-config"
+	install -Dm644 sp11-sensors.service "$pkgdir/usr/lib/systemd/system/sp11-sensors.service"
+	install -Dm644 81-sp11-sensors.rules "$pkgdir/usr/lib/udev/rules.d/81-sp11-sensors.rules"
+	install -Dm755 sp11-autorotate "$pkgdir/usr/bin/sp11-autorotate"
+	install -Dm644 sp11-autorotate.service "$pkgdir/usr/lib/systemd/user/sp11-autorotate.service"
+	install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+	install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

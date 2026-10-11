@@ -1,0 +1,11 @@
+post_install() {
+	echo ":: Install the sensor configuration and start the service:"
+	echo "     sudo sp11-sensors-config && sudo systemctl enable --now sp11-sensors.service"
+	echo "     sudo systemctl restart iio-sensor-proxy.service"
+	echo ":: Auto-rotation in Hyprland (as your user):"
+	echo "     systemctl --user enable --now sp11-autorotate.service"
+}
+
+post_upgrade() {
+	systemctl daemon-reload 2>/dev/null || true
+}
