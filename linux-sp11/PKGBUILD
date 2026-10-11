@@ -14,10 +14,10 @@
 
 pkgbase=linux-sp11
 pkgver=7.2.8.arch1
-pkgrel=3.1
+pkgrel=3.2
 pkgdesc='Surface Pro 11 Linux'
 url='https://github.com/GeneralPawz/linux-sp11'
-_commit=1fd4186f59b1f66fdcb2afda9870d90efd8863dc
+_commit=d492e9081cea8206ab4196d312ed65bafc7023be
 arch=(
   aarch64
 )
@@ -91,6 +91,8 @@ prepare() {
 
   # Enable HID-over-SPI
   scripts/config --module SPI_HID --module SPI_HID_OF
+  # GeneralPawz fork: MAX34417 power meter (Surface Pro 11 system/USB power)
+  scripts/config --module SENSORS_MAX34417
 
   make olddefconfig
   diff -u ../config.$CARCH .config || :
