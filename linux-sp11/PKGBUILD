@@ -6,14 +6,18 @@
 #
 # config.aarch64 is theirs, unchanged.
 #
+# GeneralPawz fork (branch sp11): builds GeneralPawz/linux-sp11 <release>-lcd, dwhinham's tree
+# plus our Surface Pro 11 fixes. pkgrel .1 = our build of that release. Keep url/_commit in sync
+# with tools/sync-kernel-fork.sh --push.
+#
 # Upstream maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 
 pkgbase=linux-sp11
 pkgver=7.2.8.arch1
-pkgrel=3
+pkgrel=3.1
 pkgdesc='Surface Pro 11 Linux'
-url='https://github.com/dwhinham/linux-sp11'
-_commit=616a9f22113e7dc96e558b4426424ea1d7511092
+url='https://github.com/GeneralPawz/linux-sp11'
+_commit=1fd4186f59b1f66fdcb2afda9870d90efd8863dc
 arch=(
   aarch64
 )
