@@ -24,7 +24,23 @@ initrd="$esp/initramfs-$pkgbase.img"
 # Failing here would abort the transaction that installed this package.
 [[ -r /etc/kernel/cmdline ]] || { echo "no /etc/kernel/cmdline, nothing to build" >&2; exit 0; }
 
+# The internal panel has to come up from the initramfs: an image built without the display driver
+# boots to a black screen with no way to see or fix anything. Refuse to replace working images then.
+display_modules=(msm panel-edp)
+contents=$(lsinitcpio -l "$initrd")
+for m in "${display_modules[@]}"; do
+	grep -q "/$m\.ko" <<<"$contents" && continue
+	echo "ERROR: $initrd has no $m module; keeping the existing kernel images." >&2
+	echo "Check /etc/mkinitcpio.conf.d/zz-sp11-display.conf, run mkinitcpio -P, then $0." >&2
+	exit 1
+done
+
 install -d "$esp/EFI/Linux"
+
+# uname of an existing image, empty if it has none or cannot be read
+image_kver() {
+	ukify --json=short inspect "$1" 2>/dev/null | jq -r '.".uname".text // empty' 2>/dev/null || true
+}
 
 for variant in "${variants[@]}"; do
 	name=${variant%%:*}
@@ -35,6 +51,15 @@ for variant in "${variants[@]}"; do
 	# to choose between the panel variants.
 	osrel=$(printf 'ID=arch\nPRETTY_NAME=Arch Linux (Surface Pro 11, %s)\nVERSION_ID=%s\n' "$name" "$kver")
 
+	# Keep the image this system is running from as a fallback boot entry, so a kernel that does
+	# not come up can be skipped from the boot menu. Only a booted image becomes the fallback, so
+	# two broken builds in a row can never push out the last good one.
+	out="$esp/EFI/Linux/$pkgbase-$name.efi"
+	if [[ -e $out && $(image_kver "$out") == "$(uname -r)" && $kver != "$(uname -r)" ]]; then
+		echo "Keeping the running image as $pkgbase-$name-fallback.efi ($(uname -r))"
+		cp -f "$out" "$esp/EFI/Linux/$pkgbase-$name-fallback.efi"
+	fi
+
 	echo "Building $pkgbase-$name.efi ($kver)"
 	ukify build \
 		--uname="$kver" \
@@ -43,5 +68,5 @@ for variant in "${variants[@]}"; do
 		--cmdline=@/etc/kernel/cmdline \
 		--os-release="$osrel" \
 		--devicetree="$dtb" \
-		--output="$esp/EFI/Linux/$pkgbase-$name.efi"
+		--output="$out"
 done
