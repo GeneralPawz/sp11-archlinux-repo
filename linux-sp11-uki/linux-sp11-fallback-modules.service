@@ -4,7 +4,11 @@
 [Unit]
 Description=Restore kernel modules for a fallback kernel image
 DefaultDependencies=no
-After=local-fs.target
+# /usr/lib/modules is on the root filesystem, which the initramfs already mounted read-write.
+# Do not order after local-fs.target: its mounts wait for udev coldplug, which waits for this
+# unit, so every boot stalled until the 90 s device timeout and dropped to emergency mode.
+After=systemd-remount-fs.service
+RequiresMountsFor=/usr/lib/modules
 Before=systemd-udev-trigger.service systemd-modules-load.service sysinit.target
 ConditionPathExists=!/usr/lib/modules/%v
 ConditionPathExists=/usr/lib/modules/.old/%v
