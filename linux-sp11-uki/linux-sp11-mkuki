@@ -25,15 +25,29 @@ initrd="$esp/initramfs-$pkgbase.img"
 # Failing here would abort the transaction that installed this package.
 [[ -r /etc/kernel/cmdline ]] || { echo "no /etc/kernel/cmdline, nothing to build" >&2; exit 0; }
 
+contents=$(lsinitcpio -l "$initrd")
+
+# The initramfs must belong to the kernel going into the image: a kernel booted with another
+# kernel's initramfs cannot load any module and comes up without display or keyboard.
+if ! grep -q "^usr/lib/modules/$kver/" <<<"$contents"; then
+	echo "ERROR: $initrd was not built for $kver; keeping the existing kernel images." >&2
+	echo "Run mkinitcpio -P, then $0." >&2
+	exit 1
+fi
+
 # The internal panel has to come up from the initramfs: an image built without the display driver
 # boots to a black screen with no way to see or fix anything. Refuse to replace working images then.
-display_modules=(msm panel-edp)
-contents=$(lsinitcpio -l "$initrd")
-for m in "${display_modules[@]}"; do
+for m in msm panel-edp; do
 	grep -q "/$m\.ko" <<<"$contents" && continue
 	echo "ERROR: $initrd has no $m module; keeping the existing kernel images." >&2
-	echo "Check /etc/mkinitcpio.conf.d/zz-sp11-display.conf, run mkinitcpio -P, then $0." >&2
+	echo "Run mkinitcpio -P with the display driver loaded, then $0." >&2
 	exit 1
+done
+
+# The Type Cover keyboard is what makes an emergency shell usable (sp11-rescue-input.conf).
+for m in surface_aggregator surface_hid; do
+	grep -q "/$m\.ko" <<<"$contents" ||
+		echo "WARNING: $initrd has no $m module: no Type Cover in an emergency shell." >&2
 done
 
 install -d "$esp/EFI/Linux"
@@ -71,3 +85,17 @@ for variant in "${variants[@]}"; do
 		--devicetree="$dtb" \
 		--output="$out"
 done
+
+# Check what was written: every image must carry the kernel pacman installed. An image that
+# silently paired the wrong kernel with this initramfs is how 7.2.8-arch1-3.2 failed to boot.
+failed=0
+for variant in "${variants[@]}"; do
+	out="$esp/EFI/Linux/$pkgbase-${variant%%:*}.efi"
+	[[ -e $out ]] || continue
+	got=$(image_kver "$out")
+	if [[ $got != "$kver" ]]; then
+		echo "ERROR: $out carries kernel '${got:-unknown}', expected $kver" >&2
+		failed=1
+	fi
+done
+exit $failed

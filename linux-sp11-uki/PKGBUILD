@@ -2,7 +2,7 @@
 
 pkgname=linux-sp11-uki
 pkgver=1
-pkgrel=3
+pkgrel=4
 pkgdesc='Unified kernel images for the Surface Pro 11'
 arch=('any')
 url='https://github.com/dwhinham/archlinux-repo'
@@ -10,15 +10,16 @@ license=('BSD-3-Clause')
 groups=('sp11')
 depends=('linux-sp11' 'linux-sp11-dtbs' 'systemd-ukify' 'mkinitcpio' 'jq')
 install=linux-sp11-uki.install
+backup=('etc/mkinitcpio.conf.d/sp11-rescue-input.conf')
 source=('linux-sp11-mkuki'
         '95-linux-sp11-uki.hook'
-        'linux-sp11-fallback-modules.service')
+        'sp11-rescue-input.conf')
 sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 package() {
 	install -Dm755 linux-sp11-mkuki "$pkgdir/usr/bin/linux-sp11-mkuki"
 	install -Dm644 95-linux-sp11-uki.hook \
 		"$pkgdir/usr/share/libalpm/hooks/95-linux-sp11-uki.hook"
-	install -Dm644 linux-sp11-fallback-modules.service \
-		"$pkgdir/usr/lib/systemd/system/linux-sp11-fallback-modules.service"
+	install -Dm644 sp11-rescue-input.conf \
+		"$pkgdir/etc/mkinitcpio.conf.d/sp11-rescue-input.conf"
 }
