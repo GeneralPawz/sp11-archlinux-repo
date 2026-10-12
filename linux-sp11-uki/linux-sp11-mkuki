@@ -10,11 +10,12 @@ variants=(
 	'lcd:qcom/x1p64100-microsoft-denali.dtb'
 )
 
-kver=
-for f in /usr/lib/modules/*/pkgbase; do
-	[[ -r $f && $(<"$f") == "$pkgbase" ]] || continue
-	kver=${f%/pkgbase}; kver=${kver##*/}
-done
+# Ask pacman which kernel the package installed. Globbing for */pkgbase is
+# not enough: kernel-modules-hook keeps the running kernel's module directory
+# (pkgbase included) across an upgrade, and glob order is locale dependent,
+# so the old kernel could be picked and paired with the new initramfs.
+kver=$(pacman -Qlq "$pkgbase" 2>/dev/null |
+	sed -n 's|^/usr/lib/modules/\([^/]*\)/pkgbase$|\1|p') || kver=
 [[ -n $kver ]] || { echo "$pkgbase is not installed, nothing to build" >&2; exit 0; }
 
 initrd="$esp/initramfs-$pkgbase.img"
