@@ -52,6 +52,24 @@ done
 
 install -d "$esp/EFI/Linux"
 
+# A Surface booted from its own device tree says which variant it is: build only that one, and drop
+# the other variant's images, which cannot boot this machine and only crowd the boot menu. Anywhere
+# else (another machine, a chroot, an unknown tree) build both.
+case $(tr '\0' ' ' </sys/firmware/devicetree/base/compatible 2>/dev/null) in
+*microsoft,denali-lcd*) this=lcd ;;
+*microsoft,denali-oled*) this=oled ;;
+*) this= ;;
+esac
+if [[ -n $this ]]; then
+	for variant in "${variants[@]}"; do
+		name=${variant%%:*}
+		[[ $name == "$this" ]] && continue
+		rm -f "$esp/EFI/Linux/$pkgbase-$name.efi" "$esp/EFI/Linux/$pkgbase-$name-fallback.efi"
+	done
+	for variant in "${variants[@]}"; do [[ ${variant%%:*} == "$this" ]] && variants=("$variant"); done
+	echo "Surface Pro 11 $this: building only the $this image"
+fi
+
 # uname of an existing image, empty if it has none or cannot be read
 image_kver() {
 	ukify --json=short inspect "$1" 2>/dev/null | jq -r '.".uname".text // empty' 2>/dev/null || true
