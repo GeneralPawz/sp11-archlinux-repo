@@ -10,11 +10,11 @@
 #      contains drop out by themselves),
 #   3. with --push: pushes the branch and sets _commit/url in linux-sp11/PKGBUILD.
 #
-# Usage: tools/sync-kernel-fork.sh [--push]      (KERNEL_DIR defaults to ~/projects/linux-sp11)
+# Usage: tools/sync-kernel-fork.sh [--push]      (KERNEL_DIR defaults to ~/Projects/surface/linux-sp11)
 # On a rebase conflict it stops: resolve, `git rebase --continue`, then run it again.
 set -euo pipefail
 
-kernel=${KERNEL_DIR:-$HOME/projects/linux-sp11}
+kernel=${KERNEL_DIR:-$HOME/Projects/surface/linux-sp11}
 fork_url=https://github.com/GeneralPawz/linux-sp11
 suffix=-lcd
 pkgbuild="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/linux-sp11/PKGBUILD"
