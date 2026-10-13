@@ -5,7 +5,7 @@
 # which downloads it like sp11-grab-fw does (or --from a Windows driver copy).
 
 pkgname=sp11-sensors
-pkgver=1.0.r4.1712f8e
+pkgver=1.0.r5.46f434e
 pkgrel=1
 pkgdesc='Surface Pro 11 sensors: hexagonrpcd service, configuration installer, accelerometer setup, Hyprland auto-rotation'
 arch=('any')
@@ -15,7 +15,7 @@ groups=('sp11')
 depends=('bash' 'cabextract' 'curl' 'jq' 'hexagonrpc' 'libssc' 'iio-sensor-proxy' 'inotify-tools')
 optdepends=('hyprland: sp11-autorotate')
 install=sp11-sensors.install
-_commit=1712f8ea724b0e2a90c287e6f9c9c6a78bfd57f8
+_commit=46f434e7c1d0ace1d79f41d04e79abbfb6b48e19
 source=("$pkgname::git+$url.git#commit=$_commit")
 sha256sums=('SKIP')
 
