@@ -14,10 +14,10 @@
 
 pkgbase=linux-sp11
 pkgver=7.2.8.arch1
-pkgrel=3.4
+pkgrel=3.5
 pkgdesc='Surface Pro 11 Linux'
 url='https://github.com/GeneralPawz/linux-sp11'
-_commit=b00353f6fafaf51e2992872b92b41d69d291c4f7
+_commit=56c93496da1fb7c79ce039adce61f0006e898561
 arch=(
   aarch64
 )
